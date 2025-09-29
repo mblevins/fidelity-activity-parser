@@ -20,7 +20,7 @@ def determine_quarter( date ):
     return( date_lookup[ mm ])
 
 @click.command()
-@click.option('--account', help='Account to look for', multiple=True, required=True)
+@click.option('--account', help='Account(s) to look for', multiple=True, required=True)
 def parse_dividends(account):
     """Total dividends from acccount
     """
@@ -37,7 +37,10 @@ def parse_dividends(account):
         if len(row) > 0 and row[0] == "Run Date":
             dreader = csv.DictReader( sys.stdin, fieldnames=row, delimiter=',', quotechar='"')
             break
-
+    if not dreader:
+        print("*** Can't find a header")
+        return 1
+    
     # read ledger until it stops listing dates, that's the disclaimers at the end
     for row in dreader:
             row_date = row['Run Date']
@@ -62,10 +65,14 @@ def parse_dividends(account):
                     symbol_dict[symbol] = 0
                 symbol_dict[symbol] = symbol_dict[symbol] + amount 
 
+
+    # read the ledger, print it out
     for account_name, symbol_dict in account_dict.items():
         for symbol, amount in symbol_dict.items():
             print(f"{quarter}, {account_name}, {symbol}, {amount:.2f}")
 
+
+# main
 if __name__ == '__main__':
     parse_dividends()
 
